@@ -1,0 +1,4 @@
+# conda env create -f environment.yml
+name: pride-checksum
+dependencies:
+  - python=3.12.0
