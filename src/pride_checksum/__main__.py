@@ -20,6 +20,11 @@ def is_hidden_file(filepath):
         return Path(filepath).name.startswith('.')
 
 
+def exit_with_error(code: int):
+    print("Exiting.. Please check above errors")
+    sys.exit(code)
+
+
 @click.command()
 @click.option('--files_dir', type=click.Path(), required=False,
               help="Checksum will be computed for all the files in this directory")
@@ -30,12 +35,12 @@ def main(files_dir, files_list_path):
     f_list = []
     if files_dir is None and files_list_path is None:
         print("[ERROR] Either dir option or list option should be specified")
-        sys.exit(1)
+        exit_with_error(1)
 
     if files_dir is not None:
         if not os.path.isdir(files_dir):
-            print("[ERROR] Directory doesn't exists: " + files_dir)
-            sys.exit(1)
+            print("[ERROR] Directory doesn't exist: " + files_dir)
+            exit_with_error(1)
         else:
             checksum_file = os.path.join(files_dir, "checksum.txt")
             dir_list = os.listdir(files_dir)
@@ -46,14 +51,29 @@ def main(files_dir, files_list_path):
 
     if files_list_path is not None:
         if not os.path.isfile(files_list_path):
-            print("[ERROR] File doesn't exists: " + files_list_path)
-            sys.exit(1)
+            print("[ERROR] File doesn't exist: " + files_list_path)
+            exit_with_error(1)
         else:
             checksum_file = "checksum.txt"
+            file_names = []
+            dup_files = []
             with open(files_list_path, 'r') as f:
                 for line in f:
                     line = line.strip()
-                    f_list.append(line)
+                    if not os.path.isfile(line):
+                        print("[ERROR] File doesn't exist: " + line)
+                        exit_with_error(1)
+                    else:
+                        f_list.append(line)
+                        file_name = Path(line).name
+                        if file_name in file_names:
+                            dup_files.append(file_name)
+                        else:
+                            file_names.append(file_name)
+
+            if len(dup_files) > 0:
+                print("[ERROR] Following files have duplicate entries:", dup_files)
+                exit_with_error(1)
 
     if os.path.isfile(checksum_file):
         print("[WARN] checksum.txt already exists in path:", files_dir, "This will be overwritten.")
@@ -69,10 +89,11 @@ def main(files_dir, files_list_path):
         if os.path.isfile(f) and not is_hidden_file(f):
             sha1_sum = sha1sum(f)
             cfile = open(checksum_file, 'a')
-            cfile.write(f + '\t' + sha1_sum + '\n')
+            file_name = Path(f).name
+            cfile.write(file_name + '\t' + sha1_sum + '\n')
             cfile.close()
 
-    out_path = pathlib.Path(checksum_file).parent.resolve()
+    out_path = Path(checksum_file).parent.resolve()
     print("checksum.txt file has been stored in path:", out_path)
 
 
