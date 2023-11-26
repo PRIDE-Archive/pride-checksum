@@ -1,6 +1,6 @@
 [project]
 name = "pride-checksum"
-version = "0.0.4"
+version = "0.0.5"
 description = "Computes SHA-1 checksum for all the files in the specified directory and writes to checksum.txt file."
 readme = "README.md"
 requires-python = ">=3.12"
