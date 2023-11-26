@@ -47,10 +47,14 @@ def main(files_dir, files_list_path):
             for file_name in dir_list:
                 if file_name == 'checksum.txt':
                     continue
-                if os.path.isfile(file_name) and bool(re.search('[^-_.A-Za-z0-9]', file_name)):
+                full_file_name = os.path.join(files_dir, file_name)
+                if os.path.isdir(full_file_name):
+                    print("[ERROR] Directories are not allowed: " + file_name)
+                    exit_with_error(1)
+                if os.path.isfile(full_file_name) and bool(re.search('[^-_.A-Za-z0-9]', file_name)):
                     print("[ERROR] invalid filename (only underscore and hyphen special chars are allowed):", file_name)
                     exit_with_error(1)
-                f_list.append(os.path.join(files_dir, file_name))
+                f_list.append(full_file_name)
 
     if files_list_path is not None:
         if not os.path.isfile(files_list_path):
@@ -64,7 +68,10 @@ def main(files_dir, files_list_path):
                 for line in f:
                     line = line.strip()
                     if not os.path.isfile(line):
-                        print("[ERROR] File doesn't exist: " + line)
+                        if os.path.isdir(line):
+                            print("[ERROR] Directories are not allowed: " + line)
+                        else:
+                            print("[ERROR] File doesn't exist: " + line)
                         exit_with_error(1)
                     else:
                         f_list.append(line)
