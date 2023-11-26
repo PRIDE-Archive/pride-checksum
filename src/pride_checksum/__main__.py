@@ -48,7 +48,7 @@ def main(files_dir, files_list_path):
                 if file_name == 'checksum.txt':
                     continue
                 full_file_name = os.path.join(files_dir, file_name)
-                if os.path.isdir(full_file_name):
+                if os.path.isdir(full_file_name) and not is_hidden_file(full_file_name):
                     print("[ERROR] Directories are not allowed: " + file_name)
                     exit_with_error(1)
                 if os.path.isfile(full_file_name) and bool(re.search('[^-_.A-Za-z0-9]', file_name)):
@@ -72,6 +72,9 @@ def main(files_dir, files_list_path):
                             print("[ERROR] Directories are not allowed: " + line)
                         else:
                             print("[ERROR] File doesn't exist: " + line)
+                        exit_with_error(1)
+                    elif is_hidden_file(line):
+                        print("[ERROR] Hidden files are not allowed: " + line)
                         exit_with_error(1)
                     else:
                         f_list.append(line)
