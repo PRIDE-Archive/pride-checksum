@@ -1,6 +1,6 @@
 import hashlib
 import os
-import pathlib
+import re
 import stat
 import sys
 from pathlib import Path
@@ -44,10 +44,13 @@ def main(files_dir, files_list_path):
         else:
             checksum_file = os.path.join(files_dir, "checksum.txt")
             dir_list = os.listdir(files_dir)
-            for filename in dir_list:
-                if filename == 'checksum.txt':
+            for file_name in dir_list:
+                if file_name == 'checksum.txt':
                     continue
-                f_list.append(os.path.join(files_dir, filename))
+                if os.path.isfile(file_name) and bool(re.search('[^-_.A-Za-z0-9]', file_name)):
+                    print("[ERROR] invalid filename (only underscore and hyphen special chars are allowed):", file_name)
+                    exit_with_error(1)
+                f_list.append(os.path.join(files_dir, file_name))
 
     if files_list_path is not None:
         if not os.path.isfile(files_list_path):
@@ -66,6 +69,9 @@ def main(files_dir, files_list_path):
                     else:
                         f_list.append(line)
                         file_name = Path(line).name
+                        if bool(re.search('[^-_.A-Za-z0-9]', file_name)):
+                            print("[ERROR] invalid filename (only underscore and hyphen special chars are allowed):", file_name)
+                            exit_with_error(1)
                         if file_name in file_names:
                             dup_files.append(file_name)
                         else:
