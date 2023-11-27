@@ -8,7 +8,7 @@ OR
 
 `pride_checksum --out_path /path/to/save/computed_checksum/ --files_list_path /path/to/file/containing/list_of_files.txt`
 
-Sample `list_of_files.txt`
+Sample `list_of_files.txt`:
 ```
 /path/to/some/file1.xml
 /path/to/some/file2.xml
