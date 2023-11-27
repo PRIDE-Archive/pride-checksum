@@ -1,14 +1,14 @@
-Computes SHA-1 checksum for all the files in the specified directory and writes to checksum.txt file.
+Computes SHA-1 checksum for all the files in the specified directory or for the list of all files specified in a file and writes to a `checksum.txt` file.
 
 **Usage:**
 
-pride_checksum --files_dir /dir_path/where/files/are/located/
+`pride_checksum --out_path /path/to/save/computed_checksum/ --files_dir /dir_path/where/files/are/located/`
 
 OR
 
-pride_checksum --files_list_path /path/to/file/containing/list_of_file.txt
+`pride_checksum --out_path /path/to/save/computed_checksum/ --files_list_path /path/to/file/containing/list_of_files.txt`
 
-Sample `list_of_file.txt`
+Sample `list_of_files.txt`
 ```
 /path/to/some/file1.xml
 /path/to/some/file2.xml
@@ -19,7 +19,8 @@ Please make sure the list of files:
 * Doesn't contain any directories (only files are allowed)
 * Doesn't contain any hidden files.
 
-**NOTE:**
+
+***NOTE:***
 * **File names can't have any spaces or any special chars other than underscore(_) and hyphen (-)**
 
-* The path to the computed `checksum.txt` file will be printed at the end of the log. If `checksum.txt` already exists, it will be overwritten. 
+* The name of the output file is always `checksum.txt` and if a file with same name already exists in the specified out_path, it will be overwritten. 

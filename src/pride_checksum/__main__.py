@@ -30,8 +30,28 @@ def exit_with_error(code: int):
               help="Checksum will be computed for all the files in this directory")
 @click.option('--files_list_path', type=click.Path(), required=False,
               help="Path of the file that contains list of all files whose Checksum should be computed")
-def main(files_dir, files_list_path):
-    checksum_file = None
+@click.option('--out_path', type=click.Path(), required=True, help="Path to save the computed checksum.txt file")
+def main(files_dir, files_list_path, out_path):
+    if not os.path.isdir(out_path):
+        print("[ERROR] Output directory doesn't exist:", out_path)
+        exit_with_error(1)
+
+    checksum_file = os.path.join(out_path, "checksum.txt")
+    if os.path.exists(checksum_file):
+        print("[WARN] checksum.txt already exists in path:", out_path, "This will be overwritten.")
+        # yes_no = input("Do you want to overwrite checksum.txt? [y/n]:")
+        # if str(yes_no).upper() != 'Y':
+        #     print("Exiting...")
+        #     sys.exit(0)
+
+    try:
+        cfile = open(checksum_file, 'w')
+        cfile.write('# SHA-1 Checksum \n')
+        cfile.close()
+    except PermissionError as e:
+        print("[ERROR] No permissions to write to:", checksum_file)
+        exit_with_error(1)
+
     f_list = []
     if files_dir is None and files_list_path is None:
         print("[ERROR] Either dir option or list option should be specified")
@@ -42,7 +62,6 @@ def main(files_dir, files_list_path):
             print("[ERROR] Directory doesn't exist: " + files_dir)
             exit_with_error(1)
         else:
-            checksum_file = os.path.join(files_dir, "checksum.txt")
             dir_list = os.listdir(files_dir)
             for file_name in dir_list:
                 if file_name == 'checksum.txt':
@@ -61,7 +80,6 @@ def main(files_dir, files_list_path):
             print("[ERROR] File doesn't exist: " + files_list_path)
             exit_with_error(1)
         else:
-            checksum_file = "checksum.txt"
             file_names = []
             dup_files = []
             with open(files_list_path, 'r') as f:
@@ -90,16 +108,6 @@ def main(files_dir, files_list_path):
             if len(dup_files) > 0:
                 print("[ERROR] Following files have duplicate entries:", dup_files)
                 exit_with_error(1)
-
-    if os.path.isfile(checksum_file):
-        print("[WARN] checksum.txt already exists in path:", files_dir, "This will be overwritten.")
-        # yes_no = input("Do you want to overwrite checksum.txt? [y/n]:")
-        # if str(yes_no).upper() != 'Y':
-        #     print("Exiting...")
-        #     sys.exit(0)
-        cfile = open(checksum_file, 'w')
-        cfile.write('# SHA-1 Checksum \n')
-        cfile.close()
 
     for f in f_list:
         if os.path.isfile(f) and not is_hidden_file(f):
