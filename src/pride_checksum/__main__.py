@@ -73,7 +73,8 @@ def main(files_dir, files_list_path, out_path):
                 if os.path.isfile(full_file_name) and bool(re.search('[^-_.A-Za-z0-9]', file_name)):
                     print("[ERROR] invalid filename (only underscore and hyphen special chars are allowed):", file_name)
                     exit_with_error(1)
-                f_list.append(full_file_name)
+                if not is_hidden_file(full_file_name):
+                    f_list.append(full_file_name)
 
     if files_list_path is not None:
         if not os.path.isfile(files_list_path):
@@ -108,9 +109,11 @@ def main(files_dir, files_list_path, out_path):
             if len(dup_files) > 0:
                 print("[ERROR] Following files have duplicate entries:", dup_files)
                 exit_with_error(1)
-
+    i = 0
     for f in f_list:
-        if os.path.isfile(f) and not is_hidden_file(f):
+        i = i+1
+        print("[", i, "/", len(f_list), "] Processing:", f)
+        if os.path.isfile(f):
             sha1_sum = sha1sum(f)
             cfile = open(checksum_file, 'a')
             file_name = Path(f).name
