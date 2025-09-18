@@ -25,46 +25,46 @@ pride_checksum --out_path /path/to/save/computed_checksum/ --files_list_path /pa
 ```
 
 ### Sample `list_of_files.txt`:
+=======
+# PRIDE Checksum Generator
+
+A command-line tool that computes SHA-1 checksums for files and generates integrity verification reports. This tool is essential for data validation, file integrity checking, and ensuring data hasn't been corrupted during transfer or storage.
+
+## Why do you need this tool?
+
+**Data Integrity Verification**: When working with important files (research data, archives, backups), you need to ensure files haven't been corrupted, modified, or tampered with during:
+- File transfers between systems
+- Long-term storage
+- Data migrations
+- Backup and restore operations
+
+**Compliance and Auditing**: Many organizations require checksum verification for:
+- Data governance and compliance
+- Scientific research reproducibility
+- Archive validation
+- Quality assurance processes
+
+**Batch Processing**: Instead of manually computing checksums for individual files, this tool efficiently processes entire directories or file lists, making it ideal for:
+- Large datasets
+- Automated workflows
+- Data pipelines
+- Archive management
+
+## Installation
+
+### Prerequisites
+- Python 3.11 or higher
+- pip package manager
+
+### Install from source
+```bash
+git clone https://github.com/PRIDE-Archive/pride-checksum.git
+cd pride-checksum
+pip install -e .
 ```
-/path/to/some/file1.xml
-/path/to/some/file2.xml
-/some/other/path/file3.tsv
-```
 
-## Requirements
-
-Please make sure the list of files:
-* Doesn't contain any duplicate file names.
-* Doesn't contain any directories (only files are allowed)
-* Doesn't contain any hidden files.
-
-## Important Notes
-
-* **File names can't have any spaces or any special chars other than underscore(_) and hyphen (-)**
-* The name of the output file is always `checksum.txt` and if a file with same name already exists in the specified out_path, it will be overwritten.
-
-## Development
-
-### Running Tests
-
+### Install for development
 ```bash
 pip install -e ".[dev]"
-pytest tests/
 ```
 
-### Building Package
-
-```bash
-pip install build
-python -m build
-```
-
-## Publishing to PyPI
-
-This package is automatically published to PyPI when a new release is created on GitHub. The publishing workflow:
-
-1. Create a new release on GitHub with a version tag (e.g., `v1.2.0`)
-2. The GitHub Actions workflow automatically builds and publishes the package to PyPI
-3. The package becomes available at https://pypi.org/project/pride-checksum/
-
-The publishing process uses PyPI's trusted publishing feature for secure authentication. 
