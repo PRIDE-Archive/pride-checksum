@@ -28,6 +28,11 @@ A command-line tool that computes SHA-1 checksums for files and generates integr
 - Python 3.11 or higher
 - pip package manager
 
+### Install from PyPI (recommended)
+```bash
+pip install pride-checksum
+```
+
 ### Install from source
 ```bash
 git clone https://github.com/PRIDE-Archive/pride-checksum.git
@@ -180,6 +185,12 @@ report.pdf	da39a3ee5e6b4b0d3255bfef95601890afd80709
 python -m pytest tests/ -v
 ```
 
+### Building Package
+```bash
+pip install build
+python -m build
+```
+
 ### Project Structure
 ```
 pride-checksum/
@@ -189,6 +200,16 @@ pride-checksum/
 └── pyproject.toml        # Project configuration
 ```
 
+## Publishing to PyPI
+
+This package is automatically published to PyPI when a new release is created on GitHub. The publishing workflow:
+
+1. Create a new release on GitHub with a version tag (e.g., `v1.2.0`)
+2. The GitHub Actions workflow automatically builds and publishes the package to PyPI
+3. The package becomes available at https://pypi.org/project/pride-checksum/
+
+The publishing process uses PyPI's trusted publishing feature for secure authentication.
+
 ## Use Cases
 
 - **Research Data Management**: Verify integrity of research datasets
@@ -196,4 +217,21 @@ pride-checksum/
 - **Data Transfer Verification**: Confirm files transferred correctly
 - **Backup Validation**: Verify backup integrity
 - **Compliance Auditing**: Generate checksums for audit trails
-- **Quality Assurance**: Validate data in automated pipelines 
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests for new functionality
+5. Ensure all tests pass
+6. Submit a pull request
+
+## License
+
+This project is licensed under the MIT License - see the project repository for details.
+
+## Support
+
+For questions, issues, or contributions, please visit the [GitHub repository](https://github.com/PRIDE-Archive/pride-checksum).
+
