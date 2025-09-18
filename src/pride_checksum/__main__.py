@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import os
 import re
 import stat
@@ -21,7 +22,7 @@ def is_hidden_file(filepath):
 
 
 def exit_with_error(code: int):
-    print("Exiting.. Please check above errors")
+    logging.error("Exiting.. Please check above errors")
     sys.exit(code)
 
 
@@ -32,13 +33,20 @@ def exit_with_error(code: int):
               help="Path of the file that contains list of all files whose Checksum should be computed")
 @click.option('--out_path', type=click.Path(), required=True, help="Path to save the computed checksum.txt file")
 def main(files_dir, files_list_path, out_path):
+    # Configure logging to output to console
+    logging.basicConfig(
+        level=logging.INFO,
+        format='%(message)s',
+        handlers=[logging.StreamHandler(sys.stdout)]
+    )
+    
     if not os.path.isdir(out_path):
-        print("[ERROR] Output directory doesn't exist:", out_path)
+        logging.error("[ERROR] Output directory doesn't exist: %s", out_path)
         exit_with_error(1)
 
     checksum_file = os.path.join(out_path, "checksum.txt")
     if os.path.exists(checksum_file):
-        print("[WARN] checksum.txt already exists in path:", out_path, "This will be overwritten.")
+        logging.warning("[WARN] checksum.txt already exists in path: %s This will be overwritten.", out_path)
         # yes_no = input("Do you want to overwrite checksum.txt? [y/n]:")
         # if str(yes_no).upper() != 'Y':
         #     print("Exiting...")
@@ -49,17 +57,17 @@ def main(files_dir, files_list_path, out_path):
         cfile.write('# SHA-1 Checksum \n')
         cfile.close()
     except PermissionError as e:
-        print("[ERROR] No permissions to write to:", checksum_file)
+        logging.error("[ERROR] No permissions to write to: %s", checksum_file)
         exit_with_error(1)
 
     f_list = []
     if files_dir is None and files_list_path is None:
-        print("[ERROR] Either dir option or list option should be specified")
+        logging.error("[ERROR] Either dir option or list option should be specified")
         exit_with_error(1)
 
     if files_dir is not None:
         if not os.path.isdir(files_dir):
-            print("[ERROR] Directory doesn't exist: " + files_dir)
+            logging.error("[ERROR] Directory doesn't exist: %s", files_dir)
             exit_with_error(1)
         else:
             dir_list = os.listdir(files_dir)
@@ -68,17 +76,17 @@ def main(files_dir, files_list_path, out_path):
                     continue
                 full_file_name = os.path.join(files_dir, file_name)
                 if os.path.isdir(full_file_name) and not is_hidden_file(full_file_name):
-                    print("[ERROR] Directories are not allowed: " + file_name)
+                    logging.error("[ERROR] Directories are not allowed: %s", file_name)
                     exit_with_error(1)
                 if os.path.isfile(full_file_name) and bool(re.search('[^-_.A-Za-z0-9]', file_name)):
-                    print("[ERROR] invalid filename (only underscore and hyphen special chars are allowed):", file_name)
+                    logging.error("[ERROR] invalid filename (only underscore and hyphen special chars are allowed): %s", file_name)
                     exit_with_error(1)
                 if not is_hidden_file(full_file_name):
                     f_list.append(full_file_name)
 
     if files_list_path is not None:
         if not os.path.isfile(files_list_path):
-            print("[ERROR] File doesn't exist: " + files_list_path)
+            logging.error("[ERROR] File doesn't exist: %s", files_list_path)
             exit_with_error(1)
         else:
             file_names = []
@@ -88,18 +96,18 @@ def main(files_dir, files_list_path, out_path):
                     line = line.strip()
                     if not os.path.isfile(line):
                         if os.path.isdir(line):
-                            print("[ERROR] Directories are not allowed: " + line)
+                            logging.error("[ERROR] Directories are not allowed: %s", line)
                         else:
-                            print("[ERROR] File doesn't exist: " + line)
+                            logging.error("[ERROR] File doesn't exist: %s", line)
                         exit_with_error(1)
                     elif is_hidden_file(line):
-                        print("[ERROR] Hidden files are not allowed: " + line)
+                        logging.error("[ERROR] Hidden files are not allowed: %s", line)
                         exit_with_error(1)
                     else:
                         f_list.append(line)
                         file_name = Path(line).name
                         if bool(re.search('[^-_.A-Za-z0-9]', file_name)):
-                            print("[ERROR] invalid filename (only underscore and hyphen special chars are allowed):", file_name)
+                            logging.error("[ERROR] invalid filename (only underscore and hyphen special chars are allowed): %s", file_name)
                             exit_with_error(1)
                         if file_name in file_names:
                             dup_files.append(file_name)
@@ -107,22 +115,22 @@ def main(files_dir, files_list_path, out_path):
                             file_names.append(file_name)
 
             if len(dup_files) > 0:
-                print("[ERROR] Following files have duplicate entries:", dup_files)
+                logging.error("[ERROR] Following files have duplicate entries: %s", dup_files)
                 exit_with_error(1)
     i = 0
     for f in f_list:
         i = i+1
-        print("[", i, "/", len(f_list), "] Processing:", f)
+        logging.info("[ %d / %d ] Processing: %s", i, len(f_list), f)
         if os.path.isfile(f):
             sha1_sum = sha1sum(f)
             cfile = open(checksum_file, 'a')
             file_name = Path(f).name
             cfile.write(file_name + '\t' + sha1_sum + '\n')
             cfile.close()
-            print("[", i, "/", len(f_list), "] Generated checksum for:", file_name, "->", sha1_sum)
+            logging.info("[ %d / %d ] Generated checksum for: %s -> %s", i, len(f_list), file_name, sha1_sum)
 
     out_path = Path(checksum_file).parent.resolve()
-    print("checksum.txt file has been stored in path:", out_path)
+    logging.info("checksum.txt file has been stored in path: %s", out_path)
 
 
 if __name__ == '__main__':
