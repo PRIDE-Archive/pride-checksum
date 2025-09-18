@@ -119,6 +119,7 @@ def main(files_dir, files_list_path, out_path):
             file_name = Path(f).name
             cfile.write(file_name + '\t' + sha1_sum + '\n')
             cfile.close()
+            print("[", i, "/", len(f_list), "] Generated checksum for:", file_name, "->", sha1_sum)
 
     out_path = Path(checksum_file).parent.resolve()
     print("checksum.txt file has been stored in path:", out_path)
