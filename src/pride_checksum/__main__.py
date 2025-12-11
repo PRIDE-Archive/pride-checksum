@@ -169,28 +169,30 @@ def main(files_dir, files_list_path, out_path):
         if removed_files:
             logging.info("[INFO] Removing %d files that no longer exist: %s", removed_count, list(removed_files))
     
-    i = 0
-    for f in f_list:
-        i = i+1
-        file_name = Path(f).name
-        
-        # Check if we can reuse existing checksum
-        if file_name in existing_checksums:
-            sha1_sum = existing_checksums[file_name]
-            reused_count += 1
-            logging.info("[ %d / %d ] Reusing existing checksum for: %s -> %s", i, len(f_list), file_name, sha1_sum)
-        else:
-            # Compute new checksum
-            logging.info("[ %d / %d ] Processing: %s", i, len(f_list), f)
-            if os.path.isfile(f):
+    # Open checksum file once and keep it open for all writes
+    with open(checksum_file, 'a') as cfile:
+        i = 0
+        for f in f_list:
+            i = i+1
+            file_name = Path(f).name
+            
+            # Check if we can reuse existing checksum
+            if file_name in existing_checksums:
+                sha1_sum = existing_checksums[file_name]
+                reused_count += 1
+                logging.info("[ %d / %d ] Reusing existing checksum for: %s -> %s", i, len(f_list), file_name, sha1_sum)
+            else:
+                # Compute new checksum
+                logging.info("[ %d / %d ] Processing: %s", i, len(f_list), f)
+                if not os.path.isfile(f):
+                    logging.error("[ERROR] File no longer exists: %s", f)
+                    exit_with_error(1)
                 sha1_sum = sha1sum(f)
                 new_count += 1
                 logging.info("[ %d / %d ] Generated checksum for: %s -> %s", i, len(f_list), file_name, sha1_sum)
-        
-        # Write to checksum file
-        cfile = open(checksum_file, 'a')
-        cfile.write(file_name + '\t' + sha1_sum + '\n')
-        cfile.close()
+            
+            # Write to checksum file
+            cfile.write(file_name + '\t' + sha1_sum + '\n')
 
     out_path = Path(checksum_file).parent.resolve()
     logging.info("checksum.txt file has been stored in path: %s", out_path)
