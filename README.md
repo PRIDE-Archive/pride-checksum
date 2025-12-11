@@ -96,6 +96,34 @@ Then run:
 pride_checksum --files_list_path my_files.txt --out_path /home/user/checksums/
 ```
 
+### Example 3: Incremental Update (when a file changes)
+This example demonstrates the incremental update feature, which is ideal for large datasets:
+
+```bash
+# Initial run: compute checksums for all files
+pride_checksum --files_dir my_data --out_path checksums
+
+# Later, you rename/modify a file (e.g., uncompress file.txt.gz to file.txt)
+mv my_data/file.txt.gz my_data/file.txt
+
+# Run again: only the changed file is recomputed, others are reused
+pride_checksum --files_dir my_data --out_path checksums
+```
+
+Output of the second run:
+```
+[INFO] checksum.txt already exists. Will perform incremental update.
+[INFO] Found 3 existing checksum entries.
+[INFO] Removing 1 files that no longer exist: ['file.txt.gz']
+[ 1 / 3 ] Reusing existing checksum for: file1.txt -> aaf4c61ddcc5e8a2...
+[ 2 / 3 ] Processing: /path/to/file.txt
+[ 2 / 3 ] Generated checksum for: file.txt -> 356a192b7913b04c54...
+[ 3 / 3 ] Reusing existing checksum for: file2.xml -> da39a3ee5e6b4b0d...
+[INFO] Incremental update summary: 2 reused, 1 new, 1 removed
+```
+
+**Performance benefit**: For 1000 files where only 1 file changed, you save 999 checksum computations! ⚡
+
 ### Example Output
 The generated `checksum.txt` file contains tab-separated values with filename and SHA-1 hash:
 
@@ -139,7 +167,25 @@ report.pdf	da39a3ee5e6b4b0d3255bfef95601890afd80709
 
 ## Important Notes
 
-⚠️ **Overwrite Behavior**: If `checksum.txt` already exists in the output directory, it will be **automatically overwritten** without confirmation.
+⚡ **Incremental Updates**: If `checksum.txt` already exists in the output directory, the tool will perform an **incremental update**:
+- **Reuses existing checksums** for files that haven't changed (same filename)
+- **Computes checksums only for new files** or renamed files
+- **Removes entries** for files that no longer exist
+- **Significantly faster** for large datasets when only a few files have changed
+
+This is especially useful when you have a large submission (e.g., 1000 files) and only need to update one or a few files—you don't have to recompute checksums for everything!
+
+Example incremental update output:
+```
+[INFO] checksum.txt already exists. Will perform incremental update.
+[INFO] Found 3 existing checksum entries.
+[INFO] Removing 1 files that no longer exist: ['file.txt.gz']
+[ 1 / 3 ] Reusing existing checksum for: file1.txt -> aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
+[ 2 / 3 ] Processing: /path/to/file.txt
+[ 2 / 3 ] Generated checksum for: file.txt -> 356a192b7913b04c54574d18c28d46e6395428ab
+[ 3 / 3 ] Reusing existing checksum for: file3.xml -> da39a3ee5e6b4b0d3255bfef95601890afd80709
+[INFO] Incremental update summary: 2 reused, 1 new, 1 removed
+```
 
 📝 **Progress Tracking**: The tool displays progress as it processes files:
 ```
